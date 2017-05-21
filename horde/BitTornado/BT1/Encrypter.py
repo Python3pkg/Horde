@@ -1,10 +1,10 @@
 # Written by Bram Cohen
 # see LICENSE.txt for license information
 
-from cStringIO import StringIO
+from io import StringIO
 from binascii import b2a_hex
 from socket import error as socketerror
-from urllib import quote
+from urllib.parse import quote
 from traceback import print_exc
 try:
     True
@@ -18,7 +18,7 @@ protocol_name = 'BitTorrent protocol'
 option_pattern = chr(0)*8
 
 def toint(s):
-    return long(b2a_hex(s), 16)
+    return int(b2a_hex(s), 16)
 
 def tobinary(i):
     return (chr(i >> 24) + chr((i >> 16) & 0xFF) + 
@@ -26,7 +26,7 @@ def tobinary(i):
 
 hexchars = '0123456789ABCDEF'
 hexmap = []
-for i in xrange(256):
+for i in range(256):
     hexmap.append(hexchars[(i&0xF0)/16]+hexchars[i&0x0F])
 
 def tohex(s):
@@ -201,7 +201,7 @@ class Connection:
             self.connecter.connection_flushed(self)
 
     def connection_lost(self, connection):
-        if self.Encoder.connections.has_key(connection):
+        if connection in self.Encoder.connections:
             self.sever()
 
 
@@ -232,7 +232,7 @@ class Encoder:
         self.schedulefunc(self.send_keepalives, self.keepalive_delay)
         if self.paused:
             return
-        for c in self.connections.values():
+        for c in list(self.connections.values()):
             c.keepalive()
 
     def start_connections(self, list):
@@ -261,9 +261,9 @@ class Encoder:
         if ( self.paused
              or len(self.connections) >= self.max_connections
              or id == self.my_id
-             or self.banned.has_key(dns[0]) ):
+             or dns[0] in self.banned ):
             return True
-        for v in self.connections.values():
+        for v in list(self.connections.values()):
             if v is None:
                 continue
             if id and v.id == id:
@@ -291,9 +291,9 @@ class Encoder:
             self.connecter.external_connection_made -= 1
             return False
         ip = connection.get_ip(True)
-        if self.config['security'] and self.banned.has_key(ip):
+        if self.config['security'] and ip in self.banned:
             return False
-        for v in self.connections.values():
+        for v in list(self.connections.values()):
             if connection is not v:
                 if connection.id == v.id:
                     return False
@@ -322,7 +322,7 @@ class Encoder:
         return True
 
     def close_all(self):
-        for c in self.connections.values():
+        for c in list(self.connections.values()):
             c.close()
         self.connections = {}
 

@@ -1,8 +1,8 @@
 # Written by Bram Cohen
 # see LICENSE.txt for license information
 
-from cStringIO import StringIO
-from urllib import quote
+from io import StringIO
+from urllib.parse import quote
 from threading import Event
 
 try:
@@ -37,7 +37,7 @@ class DownloaderFeedback:
     def _rotate(self):
         cs = self.choker.connections
         for id in self.lastids:
-            for i in xrange(len(cs)):
+            for i in range(len(cs)):
                 if cs[i].get_id() == id:
                     return cs[i:] + cs[:i]
         return cs

@@ -6,26 +6,26 @@
 from BitTornado import PSYCO
 if PSYCO.psyco:
     try:
-        import psyco
+        from . import psyco
         assert psyco.__version__ >= 0x010100f0
         psyco.full()
     except:
         pass
 
-from download_bt1 import BT1Download
-from RawServer import RawServer, UPnP_ERROR
-from RateLimiter import RateLimiter
-from ServerPortHandler import MultiHandler
-from parsedir import parsedir
-from natpunch import UPnP_test
+from .download_bt1 import BT1Download
+from .RawServer import RawServer, UPnP_ERROR
+from .RateLimiter import RateLimiter
+from .ServerPortHandler import MultiHandler
+from .parsedir import parsedir
+from .natpunch import UPnP_test
 from random import seed
 from socket import error as socketerror
 from threading import Event
 from sys import argv, exit
 import sys, os
-from clock import clock
-from __init__ import createPeerID, mapbase64, version
-from cStringIO import StringIO
+from .clock import clock
+from .__init__ import createPeerID, mapbase64, version
+from io import StringIO
 from traceback import print_exc
 
 try:
@@ -177,7 +177,7 @@ class LaunchMany:
                                     ipv6_socket_style = config['ipv6_binds_v4'],
                                     upnp = upnp_type, randomizer = config['random_port'])
                     break
-                except socketerror, e:
+                except socketerror as e:
                     if upnp_type and e == UPnP_ERROR:
                         self.Output.message('WARNING: COULD NOT FORWARD VIA UPnP')
                         upnp_type = 0
@@ -219,10 +219,10 @@ class LaunchMany:
         ( self.torrent_cache, self.file_cache, self.blocked_files,
             added, removed ) = r
 
-        for hash, data in removed.items():
+        for hash, data in list(removed.items()):
             self.Output.message('dropped "'+data['path']+'"')
             self.remove(hash)
-        for hash, data in added.items():
+        for hash, data in list(added.items()):
             self.Output.message('added "'+data['path']+'"')
             self.add(hash, data)
 
@@ -301,7 +301,7 @@ class LaunchMany:
         c = self.counter
         self.counter += 1
         x = ''
-        for i in xrange(3):
+        for i in range(3):
             x = mapbase64[c & 0x3F]+x
             c >>= 6
         peer_id = createPeerID(x)
@@ -361,7 +361,7 @@ class LaunchMany:
             self.hashcheck_current = None
 
     def died(self, hash):
-        if self.torrent_cache.has_key(hash):
+        if hash in self.torrent_cache:
             self.Output.message('DIED: "'+self.torrent_cache[hash]['path']+'"')
         
     def was_stopped(self, hash):

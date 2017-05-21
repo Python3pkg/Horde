@@ -9,10 +9,10 @@ import tempfile
 import threading
 import time
 
-import argparse
-import BitTornado.BT1.track as bttrack
-import BitTornado.BT1.makemetafile as makemetafile
-import murder_client as murder_client
+from . import argparse
+from . import BitTornado.BT1.track as bttrack
+from . import BitTornado.BT1.makemetafile as makemetafile
+from . import murder_client as murder_client
 
 
 opts = {}
@@ -46,7 +46,7 @@ def retries(max_tries, delay=1, backoff=2, exceptions=(Exception,), hook=None):
     def dec(func):
         def f2(*args, **kwargs):
             mydelay = delay
-            tries = range(max_tries)
+            tries = list(range(max_tries))
             tries.reverse()
             for tries_remaining in tries:
                 try:
@@ -92,7 +92,7 @@ def run(local_file, remote_file, hosts):
             try:
                 sr_uuid = get_sr_uuid(host)
             except Exception:
-                print >> sys.stderr, ' FAIL: Unable to determine SR UUID for host %s' % host
+                print(' FAIL: Unable to determine SR UUID for host %s' % host, file=sys.stderr)
                 continue  # Continue transferring to other hosts
             remote_path = sr_uuid + '/' + os.path.basename(local_file)
         else:

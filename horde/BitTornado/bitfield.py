@@ -1,3 +1,4 @@
+from functools import reduce
 # Written by Bram Cohen, Uoti Urpala, and John Hoffman
 # see LICENSE.txt for license information
 
@@ -23,7 +24,7 @@ def _int_to_booleans(x):
 
 lookup_table = []
 reverse_lookup_table = {}
-for i in xrange(256):
+for i in range(256):
     x = _int_to_booleans(i)
     lookup_table.append(x)
     reverse_lookup_table[x] = chr(i)
@@ -37,7 +38,7 @@ class Bitfield:
             self.numfalse = copyfrom.numfalse
             return
         if length is None:
-            raise ValueError, "length must be provided unless copying from another array"
+            raise ValueError("length must be provided unless copying from another array")
         self.length = length
         if bitstring is not None:
             extra = len(bitstring) * 8 - length
@@ -72,7 +73,7 @@ class Bitfield:
         booleans = self.array
         t = reverse_lookup_table
         s = len(booleans) % 8
-        r = [ t[tuple(booleans[x:x+8])] for x in xrange(0, len(booleans)-s, 8) ]
+        r = [ t[tuple(booleans[x:x+8])] for x in range(0, len(booleans)-s, 8) ]
         if s:
             r += t[tuple(booleans[-s:] + ([0] * (8-s)))]
         return ''.join(r)

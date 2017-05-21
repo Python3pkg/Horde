@@ -1,11 +1,11 @@
 #written by John Hoffman
 
-from inifile import ini_write, ini_read
-from bencode import bencode, bdecode
+from .inifile import ini_write, ini_read
+from .bencode import bencode, bdecode
 from types import IntType, LongType, StringType, FloatType
-from CreateIcons import GetIcons, CreateIcon
-from parseargs import defaultargs
-from __init__ import product_name, version_short
+from .CreateIcons import GetIcons, CreateIcon
+from .parseargs import defaultargs
+from .__init__ import product_name, version_short
 import sys,os
 from time import time, strftime
 
@@ -26,7 +26,7 @@ DIRNAME = '.'+product_name
 hexchars = '0123456789abcdef'
 hexmap = []
 revmap = {}
-for i in xrange(256):
+for i in range(256):
     x = hexchars[(i&0xF0)/16]+hexchars[i&0x0F]
     hexmap.append(x)
     revmap[x] = chr(i)
@@ -38,7 +38,7 @@ def tohex(s):
     return ''.join(r)
 
 def unhex(s):
-    r = [ revmap[s[x:x+2]] for x in xrange(0, len(s), 2) ]
+    r = [ revmap[s[x:x+2]] for x in range(0, len(s), 2) ]
     return ''.join(r)
 
 def copyfile(oldpath, newpath): # simple file copy, all in RAM
@@ -96,7 +96,7 @@ class ConfigDir:
         self.dir_root = dir_root
 
         if not os.path.isdir(self.dir_root):
-            os.mkdir(self.dir_root,0700)    # exception if failed
+            os.mkdir(self.dir_root,0o700)    # exception if failed
 
         self.dir_icons = os.path.join(dir_root,'icons')
         if not os.path.isdir(self.dir_icons):
@@ -130,7 +130,7 @@ class ConfigDir:
     def setDefaults(self, defaults, ignore=[]):
         self.config = defaultargs(defaults)
         for k in ignore:
-            if self.config.has_key(k):
+            if k in self.config:
                 del self.config[k]
 
     def checkConfig(self):
@@ -141,15 +141,15 @@ class ConfigDir:
             r = ini_read(self.configfile)['']
         except:
             return self.config
-        l = self.config.keys()
-        for k,v in r.items():
-            if self.config.has_key(k):
+        l = list(self.config.keys())
+        for k,v in list(r.items()):
+            if k in self.config:
                 t = type(self.config[k])
                 try:
                     if t == StringType:
                         self.config[k] = v
                     elif t == IntType or t == LongType:
-                        self.config[k] = long(v)
+                        self.config[k] = int(v)
                     elif t == FloatType:
                         self.config[k] = float(v)
                     l.remove(k)
@@ -161,8 +161,8 @@ class ConfigDir:
 
     def saveConfig(self, new_config = None):
         if new_config:
-            for k,v in new_config.items():
-                if self.config.has_key(k):
+            for k,v in list(new_config.items()):
+                if k in self.config:
                     self.config[k] = v
         try:
             ini_write( self.configfile, self.config,
@@ -219,7 +219,7 @@ class ConfigDir:
             except:
                 pass
             d[unhex(f)] = 1
-        return d.keys()
+        return list(d.keys())
 
     def getTorrentVariations(self, t):
         t = tohex(t)
@@ -276,7 +276,7 @@ class ConfigDir:
     ###### TORRENT DATA HANDLING ######
 
     def getTorrentData(self, t):
-        if self.TorrentDataBuffer.has_key(t):
+        if t in self.TorrentDataBuffer:
             return self.TorrentDataBuffer[t]
         t = os.path.join(self.dir_datacache,tohex(t))
         if not os.path.exists(t):
@@ -379,7 +379,7 @@ class ConfigDir:
                 times.setdefault(f,[]).append(t)
             names.setdefault(f,[]).append(p)
 
-        for k,v in times.items():
+        for k,v in list(times.items()):
             if max(v) < exptime and not k in still_active:
                 for f in names[k]:
                     try:
